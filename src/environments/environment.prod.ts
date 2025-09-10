@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.praja.com.br/api' // URL da API em produção
+  apiUrl: 'https://praja-backend.onrender.com',
+  apiTimeout: 15000,
+  enableDebugMode: false
 };
