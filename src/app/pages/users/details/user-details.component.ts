@@ -6,6 +6,7 @@ import { UserDetailsSkeletonComponent } from '../../../shared/components/user-de
 import { User, UserRole } from '../../../shared/models';
 import { UserService } from '../../../core/services/user.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { AuthService } from '../../../shared/services/auth.service';
 
 @Component({
   selector: 'app-user-details',
@@ -29,12 +30,22 @@ export class UserDetailsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private userService: UserService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
     this.userId = this.route.snapshot.paramMap.get('id');
     if (this.userId) {
+      // Verificar se usuário USER está tentando acessar perfil de outro usuário
+      const currentUser = this.authService.getCurrentUser();
+      if (currentUser && currentUser.role === UserRole.USER && currentUser.id !== this.userId) {
+        // Usuário USER tentando acessar perfil de outro usuário - redirecionar para seu próprio perfil
+        this.isLoading = false;
+        this.errorMessage = 'Você só pode visualizar seu próprio perfil.';
+        return;
+      }
+
       this.loadUser(this.userId);
     } else {
       this.isLoading = false;
@@ -46,65 +57,60 @@ export class UserDetailsComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-
-    this.userService.getUserById(id).subscribe({
-      next: (user) => {
-        this.user = user;
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('UserDetailsComponent: Erro ao carregar usuário:', error);
-        this.errorMessage = 'Erro ao carregar usuário. Tente novamente.';
-        this.isLoading = false;
-        this.toastService.error('Erro ao carregar usuário');
-
-        // Fallback para dados mock em caso de erro
-        this.loadMockUser(id);
-      }
-    });
+    // Verificar se é usuário comum tentando acessar seu próprio perfil
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser && currentUser.role === UserRole.USER && currentUser.id === id) {
+      // Para usuários USER acessando seu próprio perfil, usar auth/me
+      this.authService.getUserProfile().subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            // Converter UserProfile para User
+            this.user = {
+              id: response.data.id,
+              name: response.data.name,
+              email: response.data.email || '',
+              avatar: response.data.avatar,
+              role: response.data.role || UserRole.USER,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            };
+            this.isLoading = false;
+          } else {
+            this.handleLoadError('Erro ao carregar perfil do usuário');
+          }
+        },
+        error: (error) => {
+          console.error('UserDetailsComponent: Erro ao carregar perfil via auth/me:', error);
+          this.handleLoadError('Erro ao carregar perfil do usuário');
+        }
+      });
+    } else {
+      // Para administradores ou acesso a outros usuários, usar endpoint normal
+      this.userService.getUserById(id).subscribe({
+        next: (user) => {
+          this.user = user;
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('UserDetailsComponent: Erro ao carregar usuário:', error);
+          this.handleLoadError('Erro ao carregar usuário');
+        }
+      });
+    }
   }
 
-  private loadMockUser(id: string): void {
-    const mockUsers: User[] = [
-      {
-        id: '1',
-        name: 'Admin User',
-        email: 'admin@example.com',
-        avatar: '/assets/avatars/admin.png',
-        role: UserRole.ADMIN,
-        createdAt: new Date('2024-01-10'),
-        updatedAt: new Date('2024-01-15')
-      },
-      {
-        id: '2',
-        name: 'João Silva',
-        email: 'joao@example.com',
-        avatar: '/assets/avatars/avatar1.png',
-        role: UserRole.USER,
-        createdAt: new Date('2024-01-12'),
-        updatedAt: new Date('2024-01-12')
-      },
-      {
-        id: '3',
-        name: 'Maria Santos',
-        email: 'maria@example.com',
-        avatar: '/assets/avatars/avatar2.png',
-        role: UserRole.USER,
-        createdAt: new Date('2024-01-14'),
-        updatedAt: new Date('2024-01-14')
-      },
-      {
-        id: '4',
-        name: 'Pedro Costa',
-        email: 'pedro@example.com',
-        avatar: '/assets/avatars/avatar3.png',
-        role: UserRole.USER,
-        createdAt: new Date('2024-01-16'),
-        updatedAt: new Date('2024-01-16')
-      }
-    ];
+  private handleLoadError(message: string): void {
+    this.isLoading = false;
+    this.toastService.error(message);
 
-    this.user = mockUsers.find(u => u.id === id) || null;
+    // Tentar fallback para dados mock em caso de erro
+    if (this.userId) {
+      if (!this.user) {
+        this.errorMessage = message + '. Tente novamente.';
+      }
+    } else {
+      this.errorMessage = message + '. Tente novamente.';
+    }
   }
 
   formatDate(date: Date): string {
@@ -114,14 +120,6 @@ export class UserDetailsComponent implements OnInit {
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
-    }).format(date);
-  }
-
-  formatDateShort(date: Date): string {
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
     }).format(date);
   }
 

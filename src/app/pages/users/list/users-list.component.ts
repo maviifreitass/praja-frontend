@@ -6,6 +6,7 @@ import { UsersListSkeletonComponent } from '../../../shared/components/users-lis
 import { User, UserRole } from '../../../shared/models';
 import { UserService } from '../../../core/services/user.service';
 import { ToastService } from '../../../shared/services/toast.service';
+import { AuthService } from '../../../shared/services/auth.service';
 
 @Component({
   selector: 'app-users-list',
@@ -18,8 +19,10 @@ export class UsersListComponent implements OnInit {
   users: User[] = [];
   filteredUsers: User[] = [];
   UserRole = UserRole;
-  isLoading = true;
+  isLoading = false;
+  showSkeleton = false;
   errorMessage = '';
+  isAdmin = false;
 
   filterOptions = {
     role: 'all' as UserRole | 'all',
@@ -28,77 +31,82 @@ export class UsersListComponent implements OnInit {
 
   constructor(
     private userService: UserService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    // Verificar se o usuário atual é admin
+    this.isAdmin = this.authService.isAdmin();
     this.loadUsers();
   }
 
-  private loadUsers(): void {
+  loadUsers(): void {
     this.isLoading = true;
+    this.showSkeleton = false;
     this.errorMessage = '';
 
-
-    this.userService.getUsers().subscribe({
-      next: (users) => {
-        this.users = users;
-        this.filteredUsers = [...this.users];
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('UsersListComponent: Erro ao carregar usuários:', error);
-        this.errorMessage = 'Erro ao carregar usuários. Tente novamente.';
-        this.isLoading = false;
-        this.toastService.error('Erro ao carregar usuários');
-
-        // Fallback para dados mock em caso de erro
-        this.loadMockUsers();
+    // Mostrar skeleton apenas após um pequeno delay para evitar flash
+    const skeletonTimeout = setTimeout(() => {
+      if (this.isLoading) {
+        this.showSkeleton = true;
       }
-    });
+    }, 200);
+
+    // Verificar se é usuário comum (role USER) para mostrar apenas o próprio perfil
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser && currentUser.role === UserRole.USER) {
+      // Para usuários comuns, carregar apenas o próprio perfil via /auth/me
+      this.authService.getUserProfile().subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            // Converter UserProfile para User
+            const user: User = {
+              id: response.data.id,
+              name: response.data.name,
+              email: response.data.email || '',
+              avatar: response.data.avatar,
+              role: response.data.role || UserRole.USER,
+              createdAt: new Date(),
+              updatedAt: new Date()
+            };
+
+            this.users = [user];
+            this.filteredUsers = [...this.users];
+            this.isLoading = false;
+            this.showSkeleton = false;
+            clearTimeout(skeletonTimeout);
+          } else {
+            this.handleLoadError('Erro ao carregar perfil do usuário');
+          }
+        },
+        error: (error) => {
+          console.error('UsersListComponent: Erro ao carregar perfil do usuário:', error);
+          this.handleLoadError('Erro ao carregar perfil do usuário');
+        }
+      });
+    } else {
+      // Para administradores, carregar todos os usuários
+      this.userService.getUsers().subscribe({
+        next: (users) => {
+          this.users = users;
+          this.filteredUsers = [...this.users];
+          this.isLoading = false;
+          this.showSkeleton = false;
+          clearTimeout(skeletonTimeout);
+        },
+        error: (error) => {
+          console.error('UsersListComponent: Erro ao carregar usuários:', error);
+          this.handleLoadError('Erro ao carregar usuários');
+        }
+      });
+    }
   }
 
-  private loadMockUsers(): void {
-    this.users = [
-      {
-        id: '1',
-        name: 'Admin User',
-        email: 'admin@example.com',
-        avatar: '/assets/avatars/admin.png',
-        role: UserRole.ADMIN,
-        createdAt: new Date('2024-01-10'),
-        updatedAt: new Date('2024-01-15')
-      },
-      {
-        id: '2',
-        name: 'João Silva',
-        email: 'joao@example.com',
-        avatar: '/assets/avatars/avatar1.png',
-        role: UserRole.USER,
-        createdAt: new Date('2024-01-12'),
-        updatedAt: new Date('2024-01-12')
-      },
-      {
-        id: '3',
-        name: 'Maria Santos',
-        email: 'maria@example.com',
-        avatar: '/assets/avatars/avatar2.png',
-        role: UserRole.USER,
-        createdAt: new Date('2024-01-14'),
-        updatedAt: new Date('2024-01-14')
-      },
-      {
-        id: '4',
-        name: 'Pedro Costa',
-        email: 'pedro@example.com',
-        avatar: '/assets/avatars/avatar3.png',
-        role: UserRole.USER,
-        createdAt: new Date('2024-01-16'),
-        updatedAt: new Date('2024-01-16')
-      }
-    ];
-
-    this.filteredUsers = [...this.users];
+  private handleLoadError(message: string): void {
+    this.errorMessage = message + '. Tente novamente.';
+    this.isLoading = false;
+    this.showSkeleton = false;
   }
 
   onRoleFilter(role: UserRole | 'all'): void {
@@ -152,12 +160,12 @@ export class UsersListComponent implements OnInit {
 
       this.userService.deleteUser(user.id).subscribe({
         next: () => {
-          
+
           // Remover usuário da lista local
           this.users = this.users.filter(u => u.id !== user.id);
           this.applyFilters();
-          
-          this.toastService.success('Usuário excluído com sucesso!');
+
+          // Removido toast de sucesso - ação já é visível na interface
         },
         error: (error) => {
           console.error('UsersListComponent: Erro ao excluir usuário:', error);

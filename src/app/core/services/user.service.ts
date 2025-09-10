@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { ApiService, ApiResponse } from './api.service';
 import { User, UserRole } from '../../shared/models';
 
@@ -36,7 +36,21 @@ export class UserService {
    * Registrar um novo usuário
    */
   registerUser(userData: CreateUserRequest): Observable<ApiResponse<CreateUserResponse>> {
-    return this.apiService.post<ApiResponse<CreateUserResponse>>('/auth/register', userData);
+    return this.apiService.post<CreateUserResponse>('/auth/register', userData).pipe(
+      map((response: any) => {
+        // Verificar se a resposta já está no formato ApiResponse
+        if (response && typeof response === 'object' && 'success' in response) {
+          return response as ApiResponse<CreateUserResponse>;
+        }
+        
+        // Se não estiver, converter para o formato esperado
+        return {
+          success: true,
+          data: response,
+          message: 'Usuário criado com sucesso'
+        } as ApiResponse<CreateUserResponse>;
+      })
+    );
   }
 
   /**

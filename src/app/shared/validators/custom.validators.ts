@@ -72,10 +72,10 @@ export class CustomValidators {
         return { maxLength: { actualLength: trimmed.length, maxLength: 100 } };
       }
 
-      // Verificar se contém pelo menos nome e sobrenome
+      // Permitir apenas nome (remover exigência de sobrenome)
       const words = trimmed.split(/\s+/).filter((word: string) => word.length > 0);
-      if (words.length < 2) {
-        return { fullNameRequired: true };
+      if (words.length < 1) {
+        return { nameRequired: true };
       }
 
       // Verificar caracteres válidos (apenas letras, espaços, acentos)
@@ -92,8 +92,19 @@ export class CustomValidators {
    * Obter mensagem de erro para validadores customizados
    */
   static getErrorMessage(fieldName: string, errors: ValidationErrors): string {
+    // Mapear nomes dos campos para nomes mais amigáveis
+    const fieldLabels: { [key: string]: string } = {
+      'email': 'Email',
+      'password': 'Senha',
+      'confirmPassword': 'Confirmação de senha',
+      'name': 'Nome',
+      'acceptTerms': 'Aceitar termos'
+    };
+
+    const friendlyFieldName = fieldLabels[fieldName] || fieldName;
+
     if (errors['required']) {
-      return `${fieldName} é obrigatório`;
+      return `${friendlyFieldName} é obrigatório`;
     }
 
     if (errors['email']) {
@@ -101,11 +112,11 @@ export class CustomValidators {
     }
 
     if (errors['minlength']) {
-      return `${fieldName} deve ter pelo menos ${errors['minlength'].requiredLength} caracteres`;
+      return `${friendlyFieldName} deve ter pelo menos ${errors['minlength'].requiredLength} caracteres`;
     }
 
     if (errors['maxlength']) {
-      return `${fieldName} deve ter no máximo ${errors['maxlength'].requiredLength} caracteres`;
+      return `${friendlyFieldName} deve ter no máximo ${errors['maxlength'].requiredLength} caracteres`;
     }
 
     // Erros de senha forte
@@ -130,6 +141,10 @@ export class CustomValidators {
     }
 
     // Erros de nome
+    if (errors['nameRequired']) {
+      return 'Digite pelo menos o nome';
+    }
+    
     if (errors['fullNameRequired']) {
       return 'Digite nome e sobrenome';
     }

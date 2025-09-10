@@ -9,6 +9,7 @@ import { UserService } from '../../../core/services/user.service';
 import { ApiResponse } from '../../../core/services/api.service';
 import { CustomValidators } from '../../../shared/validators/custom.validators';
 import { ToastService } from '../../../shared/services/toast.service';
+import { AuthService } from '../../../shared/services/auth.service';
 
 @Component({
   selector: 'app-user-form',
@@ -31,6 +32,7 @@ export class UserFormComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
   UserRole = UserRole;
+  isUserEditingOwnProfile = false;
 
   roleOptions = [
     { value: UserRole.USER, label: 'Usuário' },
@@ -42,7 +44,8 @@ export class UserFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private userService: UserService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private authService: AuthService
   ) {
     this.userForm = this.createForm();
   }
@@ -55,6 +58,20 @@ export class UserFormComponent implements OnInit {
     this.userForm = this.createForm();
     
     if (this.isEditMode && this.userId) {
+      // Verificar se usuário USER está tentando editar perfil de outro usuário
+      const currentUser = this.authService.getCurrentUser();
+      if (currentUser && currentUser.role === UserRole.USER) {
+        if (currentUser.id !== this.userId) {
+          // Usuário USER tentando editar perfil de outro usuário - mostrar erro
+          this.isLoadingData = false;
+          this.errorMessage = 'Você só pode editar seu próprio perfil.';
+          return;
+        } else {
+          // Usuário USER editando seu próprio perfil
+          this.isUserEditingOwnProfile = true;
+        }
+      }
+      
       this.isLoadingData = true;
       this.loadUser(this.userId);
     }
@@ -72,35 +89,69 @@ export class UserFormComponent implements OnInit {
       role: ['', Validators.required]
     };
 
-    // Adicionar campo de senha apenas para novos usuários
+    // Campo de senha
     if (!this.isEditMode) {
+      // Para novos usuários: senha obrigatória
       formConfig.password = ['', [Validators.required, CustomValidators.strongPassword()]];
+    } else {
+      // Para edição: senha opcional (se preenchida, deve ser válida)
+      formConfig.password = ['', [CustomValidators.strongPassword()]];
     }
 
     return this.fb.group(formConfig);
   }
 
   private loadUser(id: string): void {
+    // Verificar se é usuário comum editando seu próprio perfil
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser && currentUser.role === UserRole.USER && currentUser.id === id) {
+      // Para usuários USER editando seu próprio perfil, usar auth/me
+      this.authService.getUserProfile().subscribe({
+        next: (response) => {
+          if (response.success && response.data) {
+            this.userForm.patchValue({
+              name: response.data.name,
+              email: response.data.email || '',
+              role: response.data.role || UserRole.USER
+            });
+            this.isLoadingData = false;
+          } else {
+            this.handleLoadError('Erro ao carregar perfil do usuário');
+          }
+        },
+        error: (error) => {
+          console.error('UserFormComponent: Erro ao carregar perfil via auth/me:', error);
+          this.handleLoadError('Erro ao carregar perfil do usuário');
+        }
+      });
+    } else {
+      // Para administradores ou outros casos, usar endpoint normal
+      this.userService.getUserById(id).subscribe({
+        next: (user) => {
+          this.userForm.patchValue({
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            avatar: user.avatar || ''
+          });
+          this.isLoadingData = false;
+        },
+        error: (error) => {
+          console.error('UserFormComponent: Erro ao carregar usuário:', error);
+          this.handleLoadError('Erro ao carregar dados do usuário');
+        }
+      });
+    }
+  }
 
-    this.userService.getUserById(id).subscribe({
-      next: (user) => {
-        this.userForm.patchValue({
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          avatar: user.avatar || ''
-        });
-        this.isLoadingData = false;
-      },
-      error: (error) => {
-        console.error('UserFormComponent: Erro ao carregar usuário:', error);
-        this.isLoadingData = false;
-        this.toastService.error('Erro ao carregar dados do usuário');
-        
-        // Fallback para dados mock em caso de erro
-        this.loadMockUser(id);
-      }
-    });
+  private handleLoadError(message: string): void {
+    this.isLoadingData = false;
+    this.toastService.error(message);
+    
+    // Fallback para dados mock em caso de erro
+    if (this.userId) {
+      this.loadMockUser(this.userId);
+    }
   }
 
   private loadMockUser(id: string): void {
@@ -133,7 +184,12 @@ export class UserFormComponent implements OnInit {
       const formData = this.userForm.value;
 
       if (this.isEditMode) {
-        this.updateUser(formData);
+        // Para edição: remover campo password se estiver vazio
+        const updateData = { ...formData };
+        if (!updateData.password || updateData.password.trim() === '') {
+          delete updateData.password;
+        }
+        this.updateUser(updateData);
       } else {
         this.createUser(formData);
       }
@@ -149,7 +205,7 @@ export class UserFormComponent implements OnInit {
         this.isLoading = false;
         
         if (response.success) {
-          this.toastService.success('Usuário criado com sucesso!');
+          // Usuário criado - redirecionamento já indica sucesso
           this.router.navigate(['/users']);
         } else {
           this.toastService.error(response.message || 'Erro ao criar usuário');
@@ -180,7 +236,7 @@ export class UserFormComponent implements OnInit {
     this.userService.updateUser(this.userId, data).subscribe({
       next: (user) => {
         this.isLoading = false;
-        this.toastService.success('Usuário atualizado com sucesso!');
+        // Usuário atualizado - redirecionamento já indica sucesso
         this.router.navigate(['/users', this.userId]);
       },
       error: (error) => {
@@ -207,7 +263,7 @@ export class UserFormComponent implements OnInit {
       this.userService.deleteUser(this.userId).subscribe({
         next: () => {
           this.isLoading = false;
-          this.toastService.success('Usuário excluído com sucesso!');
+          // Usuário excluído - redirecionamento já indica sucesso
           this.router.navigate(['/users']);
         },
         error: (error) => {

@@ -187,8 +187,9 @@ export class AuthService {
           const userProfile: UserProfile = {
             id: response.data.id.toString(),
             name: response.data.name,
+            email: response.data.email,
             role: response.data.role as UserRole,
-            avatar: undefined
+            avatar: response.data.avatar
           };
 
           // Atualizar perfil local

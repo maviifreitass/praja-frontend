@@ -2,7 +2,47 @@
 
 <app-user-details-skeleton *ngIf="isLoading"></app-user-details-skeleton>
 
-<div class="user-details-container" *ngIf="!isLoading && user; else notFound">
+<!-- Mensagem de erro melhorada -->
+<div class="error-state" *ngIf="!isLoading && errorMessage">
+  <div class="error-card">
+    <div class="error-icon">
+      <svg width="80" height="80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    
+    <div class="error-content">
+      <h2 class="error-title">Oops! Algo deu errado</h2>
+      <p class="error-message">{{ errorMessage }}</p>
+      
+      <div class="error-actions">
+        <button class="btn btn-primary" routerLink="/users">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+          </svg>
+          Voltar para Usuários
+        </button>
+        
+        <button class="btn btn-secondary" (click)="ngOnInit()">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+            <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+          </svg>
+          Tentar Novamente
+        </button>
+      </div>
+      
+      <div class="error-help">
+        <p class="help-text">Se o problema persistir, entre em contato com o suporte.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Conteúdo do usuário -->
+<div class="user-details-container" *ngIf="!isLoading && user && !errorMessage">
   <!-- Breadcrumb -->
   <nav class="breadcrumb">
     <a routerLink="/users">Usuários</a>
@@ -112,20 +152,3 @@
     </div>
   </div>
 </div>
-
-<!-- Usuário não encontrado -->
-<ng-template #notFound>
-  <div class="not-found">
-    <div class="not-found-content">
-      <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
-      </svg>
-      <h2>Usuário não encontrado</h2>
-      <p>O usuário solicitado não existe ou foi removido.</p>
-      <button class="btn-primary" routerLink="/users">
-        Voltar para Usuários
-      </button>
-    </div>
-  </div>
-</ng-template>

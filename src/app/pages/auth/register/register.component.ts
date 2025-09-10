@@ -32,7 +32,7 @@ export class RegisterComponent {
 
   private createForm(): FormGroup {
     return this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
+      name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]],
@@ -62,80 +62,54 @@ export class RegisterComponent {
   }
 
   onSubmit(): void {
-    console.log('onSubmit chamado');
-    console.log('Form valid:', this.registerForm.valid);
-    console.log('Form errors:', this.registerForm.errors);
-    console.log('Form values:', this.registerForm.value);
-    console.log('isLoading:', this.isLoading);
-    
-    // Verificar erros de cada campo
-    Object.keys(this.registerForm.controls).forEach(key => {
-      const control = this.registerForm.get(key);
-      if (control?.errors) {
-        console.log(`Campo ${key} tem erros:`, control.errors);
-      }
-    });
-    
-    // Teste simples - sempre tentar chamar API independente da validação
-    console.log('Forçando chamada da API para teste...');
-    this.isLoading = true;
-    this.errorMessage = '';
-    this.successMessage = '';
-    
-    const { name, email, password } = this.registerForm.value;
-    
-    // Preparar dados para API (role padrão: USER)
-    const userData = {
-      name: name || 'Teste',
-      email: email || 'teste@teste.com',
-      password: password || '123456',
-      role: UserRole.USER
-    };
-    
-    console.log('Dados a serem enviados:', userData);
-    
-    this.userService.registerUser(userData).subscribe({
-      next: (response: ApiResponse<any>) => {
-        console.log('Resposta da API recebida:', response);
-        this.isLoading = false;
-        if (response.success) {
-          this.successMessage = 'Conta criada com sucesso! Redirecionando para o login...';
-          setTimeout(() => {
-            this.router.navigate(['/auth/login'], {
-              queryParams: { message: 'registration_success' }
-            });
-          }, 2000);
-        } else {
-          this.errorMessage = response.message || 'Erro ao criar conta';
-        }
-      },
-      error: (error: any) => {
-        console.log('Erro da API recebido:', error);
-        this.isLoading = false;
-        console.error('Erro no registro:', error);
-        
-        // Tratar diferentes tipos de erro
-        if (error.status === 400) {
-          this.errorMessage = 'Dados inválidos. Verifique os campos e tente novamente.';
-        } else if (error.status === 422) {
-          this.errorMessage = 'Email já está em uso. Escolha outro email.';
-        } else if (error.status === 500) {
-          this.errorMessage = 'Erro interno do servidor. Tente novamente mais tarde.';
-        } else {
-          this.errorMessage = error.message || 'Erro ao criar conta. Tente novamente.';
-        }
-      }
-    });
-    
-    // Código original comentado para debug
-    /*
     if (this.registerForm.valid && !this.isLoading) {
-      // ... código original
+      this.isLoading = true;
+      this.errorMessage = '';
+      this.successMessage = '';
+      
+      const { name, email, password } = this.registerForm.value;
+      
+      // Preparar dados para API (role padrão: USER)
+      const userData = {
+        name: name,
+        email: email,
+        password: password,
+        role: UserRole.USER
+      };
+      
+      this.userService.registerUser(userData).subscribe({
+        next: (response: ApiResponse<any>) => {
+          this.isLoading = false;
+          if (response.success) {
+            this.successMessage = 'Conta criada com sucesso! Redirecionando para o login...';
+            setTimeout(() => {
+              this.router.navigate(['/auth/login'], {
+                queryParams: { message: 'registration_success' }
+              });
+            }, 2000);
+          } else {
+            this.errorMessage = response.message || 'Erro ao criar conta';
+          }
+        },
+        error: (error: any) => {
+          this.isLoading = false;
+          console.error('Erro no registro:', error);
+          
+          // Tratar diferentes tipos de erro
+          if (error.status === 400) {
+            this.errorMessage = 'Dados inválidos. Verifique os campos e tente novamente.';
+          } else if (error.status === 422) {
+            this.errorMessage = 'Email já está em uso. Escolha outro email.';
+          } else if (error.status === 500) {
+            this.errorMessage = 'Erro interno do servidor. Tente novamente mais tarde.';
+          } else {
+            this.errorMessage = error.message || 'Erro ao criar conta. Tente novamente.';
+          }
+        }
+      });
     } else {
-      console.log('Formulário inválido, marcando campos como tocados');
       this.markFormGroupTouched();
     }
-    */
   }
 
   togglePasswordVisibility(field: 'password' | 'confirmPassword'): void {
