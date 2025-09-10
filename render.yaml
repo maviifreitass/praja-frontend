@@ -3,7 +3,7 @@ services:
     name: praja-frontend
     env: static
     buildCommand: npm ci && npm run build
-    staticPublishPath: ./dist/praja/browser
+    staticPublishPath: ./dist
     routes:
       - type: rewrite
         source: /*
