@@ -1,0 +1,131 @@
+<app-header currentPage="Detalhes do Usuário" [showFilters]="false"></app-header>
+
+<app-user-details-skeleton *ngIf="isLoading"></app-user-details-skeleton>
+
+<div class="user-details-container" *ngIf="!isLoading && user; else notFound">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a routerLink="/users">Usuários</a>
+    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+    </svg>
+    <span>{{ user.name }}</span>
+  </nav>
+
+  <div class="user-content">
+    <!-- Header do usuário -->
+    <div class="user-header">
+      <div class="user-info">
+        <div class="user-avatar">
+          <img [src]="user.avatar" [alt]="user.name" *ngIf="user.avatar">
+          <div class="avatar-placeholder" *ngIf="!user.avatar">
+            {{ user.name.charAt(0).toUpperCase() }}
+          </div>
+        </div>
+
+        <div class="user-details">
+          <h1 class="user-name">{{ user.name }}</h1>
+          <div class="user-meta">
+            <span class="user-id">#{{ user.id }}</span>
+            <span class="user-email">{{ user.email }}</span>
+          </div>
+          <div class="user-role-info">
+            <span class="role-badge" [class]="getRoleClass(user.role)">
+              {{ getRoleLabel(user.role) }}
+            </span>
+            <span class="role-description">{{ getRoleDescription(user.role) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-secondary" [routerLink]="['/users', user.id, 'edit']">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708L15.207 4.5 9.5 10.207l-.646.647a.5.5 0 0 1-.708 0L6.5 9.207l-.646-.647a.5.5 0 0 1 0-.708L11.207 2.5l.647-.646zM2.5 11.207l.646.647a.5.5 0 0 0 .708 0l6-6-.708-.708-6 6a.5.5 0 0 0 0 .708z"/>
+          </svg>
+          Editar
+        </button>
+      </div>
+    </div>
+
+    <div class="user-body">
+      <!-- Informações do usuário -->
+      <div class="info-card">
+        <h3>Informações Gerais</h3>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Nome completo</label>
+            <span>{{ user.name }}</span>
+          </div>
+
+          <div class="info-item">
+            <label>Email</label>
+            <span>{{ user.email }}</span>
+          </div>
+
+          <div class="info-item">
+            <label>Tipo de usuário</label>
+            <span class="role-badge" [class]="getRoleClass(user.role)">
+              {{ getRoleLabel(user.role) }}
+            </span>
+          </div>
+
+          <div class="info-item">
+            <label>ID do usuário</label>
+            <span class="user-id-code">#{{ user.id }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Datas importantes -->
+      <div class="info-card">
+        <h3>Histórico</h3>
+
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-icon created">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+              </svg>
+            </div>
+            <div class="timeline-content">
+              <h4>Usuário criado</h4>
+              <p>{{ formatDate(user.createdAt) }}</p>
+            </div>
+          </div>
+
+          <div class="timeline-item" *ngIf="user.updatedAt.getTime() !== user.createdAt.getTime()">
+            <div class="timeline-icon updated">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M1.705 8.005a.5.5 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-.17-.015a.5.5 0 1 1 .085-.994l.818.073a.5.5 0 0 1 .447.562l-.73 8.17a.5.5 0 1 1-.994-.09l.09-.997A6.5 6.5 0 1 1 2.086 4.804l-.17.015a.5.5 0 1 1-.085.994l-.818-.073A.5.5 0 0 1 .56 5.178l.73-8.17a.5.5 0 1 1 .994.09L2.196 6.2A6.5 6.5 0 0 1 14.295 8.005a.5.5 0 0 1-.834.656 5.5 5.5 0 0 0-11.756 0z"/>
+              </svg>
+            </div>
+            <div class="timeline-content">
+              <h4>Última atualização</h4>
+              <p>{{ formatDate(user.updatedAt) }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Usuário não encontrado -->
+<ng-template #notFound>
+  <div class="not-found">
+    <div class="not-found-content">
+      <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+      </svg>
+      <h2>Usuário não encontrado</h2>
+      <p>O usuário solicitado não existe ou foi removido.</p>
+      <button class="btn-primary" routerLink="/users">
+        Voltar para Usuários
+      </button>
+    </div>
+  </div>
+</ng-template>

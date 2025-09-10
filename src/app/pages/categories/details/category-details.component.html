@@ -1,0 +1,162 @@
+<app-header currentPage="Detalhes da Categoria" [showFilters]="false"></app-header>
+
+<app-category-details-skeleton *ngIf="isLoading"></app-category-details-skeleton>
+
+<div class="category-details-container" *ngIf="!isLoading && category; else notFound">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a routerLink="/categories">Categorias</a>
+    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+    </svg>
+    <span>{{ category.name }}</span>
+  </nav>
+
+  <div class="category-content">
+    <!-- Header da categoria -->
+    <div class="category-header">
+      <div class="category-info">
+        <div class="category-visual">
+          <div class="category-color" [style.background-color]="category.color"></div>
+        </div>
+
+        <div class="category-details">
+          <h1 class="category-name">{{ category.name }}</h1>
+          <div class="category-meta">
+            <span class="category-id">#{{ category.id }}</span>
+            <span class="category-color-value">{{ category.color }}</span>
+          </div>
+          <p class="category-description" *ngIf="category.description">
+            {{ category.description }}
+          </p>
+          <p class="no-description" *ngIf="!category.description">
+            Nenhuma descrição fornecida.
+          </p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-secondary" [routerLink]="['/categories', category.id, 'edit']">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708L15.207 4.5 9.5 10.207l-.646.647a.5.5 0 0 1-.708 0L6.5 9.207l-.646-.647a.5.5 0 0 1 0-.708L11.207 2.5l.647-.646zM2.5 11.207l.646.647a.5.5 0 0 0 .708 0l6-6-.708-.708-6 6a.5.5 0 0 0 0 .708z"/>
+          </svg>
+          Editar
+        </button>
+      </div>
+    </div>
+
+    <div class="category-body">
+
+      <!-- Informações da categoria -->
+      <div class="info-card">
+        <h3>Informações</h3>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Nome</label>
+            <span>{{ category.name }}</span>
+          </div>
+
+          <div class="info-item">
+            <label>ID</label>
+            <span class="category-id-code">#{{ category.id }}</span>
+          </div>
+
+          <div class="info-item">
+            <label>Cor</label>
+            <div class="color-info">
+              <div class="color-sample" [style.background-color]="category.color"></div>
+              <span class="color-code">{{ category.color }}</span>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <label>Descrição</label>
+            <span>{{ category.description || 'Nenhuma descrição fornecida' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tickets recentes -->
+      <div class="info-card tickets-card">
+        <div class="card-header">
+          <h3>Tickets Recentes</h3>
+          <a class="view-all-link" routerLink="/tickets">Ver todos</a>
+        </div>
+
+        <div class="tickets-list" *ngIf="getRecentTickets().length > 0">
+          <div class="ticket-item" *ngFor="let ticket of getRecentTickets()">
+            <div class="ticket-info">
+              <h4 class="ticket-title">{{ ticket.title }}</h4>
+              <div class="ticket-meta">
+                <span class="ticket-id">#{{ ticket.id }}</span>
+                <span class="ticket-status" [class]="'status-' + ticket.status">
+                  {{ ticket.status === 'open' ? 'Aberto' : 'Fechado' }}
+                </span>
+                <span class="ticket-priority" [class]="'priority-' + ticket.priority">
+                  {{ ticket.priority === 'high' ? 'Alta' : ticket.priority === 'medium' ? 'Média' : 'Baixa' }}
+                </span>
+              </div>
+            </div>
+            <button class="ticket-link" [routerLink]="['/tickets', ticket.id]">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="empty-tickets" *ngIf="getRecentTickets().length === 0">
+          <p>Nenhum ticket encontrado para esta categoria.</p>
+        </div>
+      </div>
+
+      <!-- Histórico -->
+      <div class="info-card">
+        <h3>Histórico</h3>
+
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-icon created">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+              </svg>
+            </div>
+            <div class="timeline-content">
+              <h4>Categoria criada</h4>
+              <p>{{ formatDate(category.createdAt) }}</p>
+            </div>
+          </div>
+
+          <div class="timeline-item" *ngIf="category.updatedAt && category.updatedAt.getTime() !== category.createdAt.getTime()">
+            <div class="timeline-icon updated">
+              <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M1.705 8.005a.5.5 0 0 1 .834.656 5.5 5.5 0 0 0 9.592 2.97l-.17-.015a.5.5 0 1 1 .085-.994l.818.073a.5.5 0 0 1 .447.562l-.73 8.17a.5.5 0 1 1-.994-.09l.09-.997A6.5 6.5 0 1 1 2.086 4.804l-.17.015a.5.5 0 1 1-.085.994l-.818-.073A.5.5 0 0 1 .56 5.178l.73-8.17a.5.5 0 1 1 .994.09L2.196 6.2A6.5 6.5 0 0 1 14.295 8.005a.5.5 0 0 1-.834.656 5.5 5.5 0 0 0-11.756 0z"/>
+              </svg>
+            </div>
+            <div class="timeline-content">
+              <h4>Última atualização</h4>
+              <p>{{ formatDate(category.updatedAt!) }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #notFound>
+  <div class="not-found" *ngIf="!isLoading">
+    <div class="not-found-content">
+      <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
+        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+        <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
+      </svg>
+      <h2>{{ errorMessage || 'Categoria não encontrada' }}</h2>
+      <p>{{ errorMessage ? 'Ocorreu um erro ao carregar a categoria.' : 'A categoria solicitada não existe ou foi removida.' }}</p>
+      <button class="btn-primary" routerLink="/categories">
+        Voltar para Categorias
+      </button>
+    </div>
+  </div>
+</ng-template>

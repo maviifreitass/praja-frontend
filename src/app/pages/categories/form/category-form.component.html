@@ -1,0 +1,147 @@
+<app-header [currentPage]="pageTitle" [showFilters]="false"></app-header>
+
+<app-category-form-skeleton *ngIf="isLoadingData"></app-category-form-skeleton>
+
+<div class="category-form-container" *ngIf="!isLoadingData">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a routerLink="/categories">Categorias</a>
+    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+    </svg>
+    <span *ngIf="isEditMode">Editar</span>
+    <span *ngIf="!isEditMode">Nova Categoria</span>
+  </nav>
+
+  <div class="form-container">
+    <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" class="category-form">
+      <!-- Nome -->
+      <div class="form-group">
+        <label for="name" class="form-label">
+          Nome da categoria *
+        </label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          class="form-input"
+          [class.error]="isFieldInvalid('name')"
+          placeholder="Digite o nome da categoria"
+        >
+        <div class="error-message" *ngIf="isFieldInvalid('name')">
+          {{ getFieldError('name') }}
+        </div>
+      </div>
+
+      <!-- Descrição -->
+      <div class="form-group">
+        <label for="description" class="form-label">
+          Descrição
+        </label>
+        <textarea
+          id="description"
+          formControlName="description"
+          class="form-textarea"
+          placeholder="Descreva o propósito desta categoria (opcional)"
+          rows="3"
+        ></textarea>
+      </div>
+
+      <!-- Cor -->
+      <div class="form-group">
+        <label class="form-label">
+          Cor da categoria *
+        </label>
+        <div class="color-selection">
+          <div class="selected-color">
+            <div 
+              class="color-preview" 
+              [style.background-color]="categoryForm.get('color')?.value">
+            </div>
+            <span class="color-value">{{ categoryForm.get('color')?.value }}</span>
+          </div>
+          
+          <div class="color-grid">
+            <button
+              *ngFor="let color of predefinedColors"
+              type="button"
+              class="color-option"
+              [class.selected]="categoryForm.get('color')?.value === color"
+              [style.background-color]="color"
+              (click)="selectColor(color)"
+              [title]="color"
+            ></button>
+          </div>
+          
+          <div class="custom-color">
+            <label for="customColor" class="custom-color-label">Cor personalizada:</label>
+            <input
+              id="customColor"
+              type="color"
+              formControlName="color"
+              class="color-input"
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview da categoria -->
+      <div class="category-preview">
+        <label class="form-label">Preview</label>
+        <div class="preview-card">
+          <div class="preview-header">
+            <div class="preview-color" [style.background-color]="categoryForm.get('color')?.value"></div>
+            <div class="preview-info">
+              <h3 class="preview-name">{{ categoryForm.get('name')?.value || 'Nome da categoria' }}</h3>
+              <p class="preview-description">{{ categoryForm.get('description')?.value || 'Descrição da categoria' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div class="form-actions">
+        <div class="actions-left">
+          <button
+            type="button"
+            class="btn-secondary"
+            (click)="onCancel()"
+            [disabled]="isLoading"
+          >
+            Cancelar
+          </button>
+        </div>
+
+        <div class="actions-right">
+          <button
+            *ngIf="isEditMode"
+            type="button"
+            class="btn-danger"
+            (click)="onDelete()"
+            [disabled]="isLoading"
+          >
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+              <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+            </svg>
+            Excluir
+          </button>
+
+          <button
+            type="submit"
+            class="btn-primary"
+            [disabled]="categoryForm.invalid || isLoading"
+          >
+            <svg *ngIf="isLoading" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="loading-spinner">
+              <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm0-1A7 7 0 1 1 8 1a7 7 0 0 1 0 14z"/>
+            </svg>
+            <svg *ngIf="!isLoading" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022Z"/>
+            </svg>
+            {{ isEditMode ? 'Salvar' : 'Criar' }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

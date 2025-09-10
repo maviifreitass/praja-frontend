@@ -1,0 +1,157 @@
+<app-header [currentPage]="pageTitle" [showFilters]="false"></app-header>
+
+@if (isLoadingData) {
+  <app-ticket-form-skeleton></app-ticket-form-skeleton>
+}
+
+@if (!isLoadingData) {
+  <div class="ticket-form-container">
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb">
+    <a routerLink="/tickets">Tickets</a>
+    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z"/>
+    </svg>
+    @if (isEditMode) {
+      <span>Editar</span>
+    } @else {
+      <span>Novo Ticket</span>
+    }
+  </nav>
+
+  <div class="form-container">
+    <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()" class="ticket-form">
+      <!-- Título -->
+      <div class="form-group">
+        <label for="title" class="form-label">
+          Título *
+        </label>
+        <input
+          id="title"
+          type="text"
+          formControlName="title"
+          class="form-input"
+          [class.error]="isFieldInvalid('title')"
+          placeholder="Descreva o problema ou solicitação de forma clara"
+        >
+        @if (isFieldInvalid('title')) {
+          <div class="error-message">
+            {{ getFieldError('title') }}
+          </div>
+        }
+      </div>
+
+      <!-- Descrição -->
+      <div class="form-group">
+        <label for="description" class="form-label">
+          Descrição *
+        </label>
+        <textarea
+          id="description"
+          formControlName="description"
+          class="form-textarea"
+          [class.error]="isFieldInvalid('description')"
+          placeholder="Descreva detalhadamente o problema, incluindo passos para reproduzir, impacto e qualquer informação relevante"
+          rows="6"
+        ></textarea>
+        @if (isFieldInvalid('description')) {
+          <div class="error-message">
+            {{ getFieldError('description') }}
+          </div>
+        }
+      </div>
+
+      <div class="form-row">
+        <!-- Categoria -->
+        <div class="form-group">
+          <label for="categoryId" class="form-label">
+            Categoria *
+          </label>
+          <select
+            id="categoryId"
+            formControlName="categoryId"
+            class="form-select"
+            [class.error]="isFieldInvalid('categoryId')"
+          >
+            <option value="">Selecione uma categoria</option>
+            @for (category of categories; track category.id) {
+              <option [value]="category.id">
+                {{ category.name }}
+              </option>
+            }
+          </select>
+          @if (isFieldInvalid('categoryId')) {
+            <div class="error-message">
+              {{ getFieldError('categoryId') }}
+            </div>
+          }
+        </div>
+
+        <!-- Prioridade -->
+        <div class="form-group">
+          <label for="priority" class="form-label">
+            Prioridade *
+          </label>
+          <select
+            id="priority"
+            formControlName="priority"
+            class="form-select"
+            [class.error]="isFieldInvalid('priority')"
+          >
+            @for (option of priorityOptions; track option.value) {
+              <option [value]="option.value">
+                {{ option.label }}
+              </option>
+            }
+          </select>
+          @if (ticketForm.get('priority')?.value) {
+            <div class="priority-preview">
+              <app-status-chip
+                [priority]="ticketForm.get('priority')?.value"
+                type="priority">
+              </app-status-chip>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div class="form-actions">
+        <button
+          type="button"
+          class="btn-secondary"
+          (click)="onCancel()"
+          [disabled]="isLoading"
+        >
+          Cancelar
+        </button>
+
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="isLoading"
+        >
+          @if (isLoading) {
+            <svg
+              class="loading-spinner"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+            >
+              <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" opacity="0.3"/>
+              <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+            </svg>
+            <span>
+              {{ isEditMode ? 'Salvando...' : 'Criando...' }}
+            </span>
+          } @else {
+            <span>
+              {{ isEditMode ? 'Salvar Alterações' : 'Criar Ticket' }}
+            </span>
+          }
+        </button>
+      </div>
+    </form>
+  </div>
+  </div>
+}

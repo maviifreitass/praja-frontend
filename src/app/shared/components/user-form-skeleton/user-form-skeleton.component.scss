@@ -1,0 +1,149 @@
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 4px;
+}
+
+.user-form-skeleton-container {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.skeleton-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+
+  .skeleton-breadcrumb-item {
+    @extend .skeleton;
+    width: 80px;
+    height: 20px;
+    border-radius: 4px;
+  }
+
+  .skeleton-breadcrumb-separator {
+    @extend .skeleton;
+    width: 16px;
+    height: 16px;
+    border-radius: 2px;
+  }
+}
+
+.skeleton-header {
+  margin-bottom: 2rem;
+
+  .skeleton-title {
+    @extend .skeleton;
+    width: 250px;
+    height: 32px;
+    border-radius: 8px;
+  }
+}
+
+.skeleton-form {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 2rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.skeleton-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.skeleton-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .skeleton-label {
+    @extend .skeleton;
+    width: 80px;
+    height: 16px;
+    border-radius: 4px;
+  }
+
+  .skeleton-input {
+    @extend .skeleton;
+    width: 100%;
+    height: 40px;
+    border-radius: 6px;
+  }
+
+  .skeleton-select {
+    @extend .skeleton;
+    width: 100%;
+    height: 40px;
+    border-radius: 6px;
+  }
+}
+
+.skeleton-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e5e7eb;
+
+  .skeleton-btn {
+    @extend .skeleton;
+    height: 40px;
+    border-radius: 6px;
+
+    &.secondary {
+      width: 100px;
+    }
+
+    &.primary {
+      width: 120px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .user-form-skeleton-container {
+    padding: 1rem;
+  }
+
+  .skeleton-form {
+    padding: 1.5rem;
+  }
+
+  .skeleton-form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .skeleton-actions {
+    flex-direction: column;
+
+    .skeleton-btn {
+      width: 100%;
+    }
+  }
+}

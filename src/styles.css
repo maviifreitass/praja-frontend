@@ -1,1 +1,14 @@
+*,
+*::before,
+*::after {
+  font-family: 'Montserrat', sans-serif !important;
+}
+
+/* Reset global para remover margens e paddings padrão */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
 /* You can add global styles to this file, and also import other style files */

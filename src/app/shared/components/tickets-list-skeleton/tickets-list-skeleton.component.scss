@@ -1,0 +1,251 @@
+.tickets-list-skeleton {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem 2rem;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.skeleton-base {
+  background: #e5e7eb;
+  border-radius: 0.25rem;
+  position: relative;
+  overflow: hidden;
+  animation: pulse 2s infinite;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.6),
+      transparent
+    );
+    animation: shimmer 1.5s infinite;
+  }
+}
+
+.controls-skeleton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+}
+
+.filters-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+}
+
+.filter-group-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.skeleton-label {
+  @extend .skeleton-base;
+  height: 1rem;
+  width: 4rem;
+}
+
+.skeleton-select {
+  @extend .skeleton-base;
+  height: 2.25rem;
+  width: 8rem;
+  border-radius: 0.375rem;
+}
+
+.search-group-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.skeleton-search-input {
+  @extend .skeleton-base;
+  height: 2.25rem;
+  width: 12rem;
+  border-radius: 0.375rem;
+}
+
+.actions-skeleton {
+  display: flex;
+  gap: 1rem;
+}
+
+.skeleton-button {
+  @extend .skeleton-base;
+  height: 2.5rem;
+  width: 6rem;
+  border-radius: 0.375rem;
+}
+
+.tickets-grid-skeleton {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+.ticket-card-skeleton {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+}
+
+.ticket-header-skeleton {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ticket-title-skeleton {
+  @extend .skeleton-base;
+  height: 1.25rem;
+  width: 70%;
+}
+
+.ticket-status-skeleton {
+  @extend .skeleton-base;
+  height: 1.5rem;
+  width: 4rem;
+  border-radius: 0.75rem;
+}
+
+.ticket-meta-skeleton {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.skeleton-meta-item {
+  @extend .skeleton-base;
+  height: 0.875rem;
+  width: 3rem;
+  border-radius: 0.375rem;
+}
+
+.ticket-description-skeleton {
+  @extend .skeleton-base;
+  height: 3rem;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.ticket-footer-skeleton {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ticket-assignee-skeleton {
+  @extend .skeleton-base;
+  height: 1rem;
+  width: 6rem;
+}
+
+.ticket-date-skeleton {
+  @extend .skeleton-base;
+  height: 1rem;
+  width: 4rem;
+}
+
+// Variações de timing para tornar mais natural
+.ticket-card-skeleton:nth-child(2n) {
+  &::before {
+    animation-delay: 0.3s;
+  }
+  
+  .ticket-title-skeleton {
+    width: 60%;
+  }
+}
+
+.ticket-card-skeleton:nth-child(3n) {
+  &::before {
+    animation-delay: 0.6s;
+  }
+  
+  .ticket-title-skeleton {
+    width: 80%;
+  }
+  
+  .ticket-description-skeleton {
+    height: 2.5rem;
+  }
+}
+
+.ticket-card-skeleton:nth-child(4n) {
+  &::before {
+    animation-delay: 0.9s;
+  }
+  
+  .ticket-description-skeleton {
+    height: 3.5rem;
+  }
+}

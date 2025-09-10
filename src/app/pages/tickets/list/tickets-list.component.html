@@ -1,0 +1,90 @@
+<app-header currentPage="Tickets"></app-header>
+
+@if (isLoading) {
+  <app-tickets-list-skeleton></app-tickets-list-skeleton>
+}
+
+@if (!isLoading) {
+  <div class="tickets-list-container">
+  <!-- Filtros e controles -->
+  <div class="controls-section">
+    <div class="filters">
+
+      <!-- Filtro por prioridade -->
+      <div class="filter-group">
+        <label>Prioridade:</label>
+        <select (change)="onPriorityFilter($any($event.target).value)">
+          <option value="all">Todas</option>
+          <option value="HIGH">Alta</option>
+          <option value="MEDIUM">Média</option>
+          <option value="LOW">Baixa</option>
+        </select>
+      </div>
+
+      <!-- Filtro por categoria -->
+      <div class="filter-group">
+        <label>Categoria:</label>
+        <select (change)="onCategoryFilter($any($event.target).value)">
+          <option value="all">Todas ({{ getCategoryCount('all') }})</option>
+          @for (category of categories; track category.id) {
+            <option [value]="category.id">
+              {{ category.name }} ({{ getCategoryCount(category.id) }})
+            </option>
+          }
+        </select>
+      </div>
+
+      <!-- Busca -->
+      <div class="search-group">
+        <input
+          type="text"
+          placeholder="Buscar tickets..."
+          (input)="onSearchChange($any($event.target).value)"
+        >
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Botão de criar novo ticket -->
+    <div class="actions">
+      <button class="btn-primary" routerLink="/tickets/new">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+        </svg>
+        Novo Ticket
+      </button>
+    </div>
+  </div>
+
+  <!-- Lista de tickets -->
+  <div class="tickets-grid">
+    @for (ticket of filteredTickets; track ticket.id) {
+      <div class="ticket-item">
+        <app-ticket-card
+          [ticket]="ticket"
+          [categories]="categories"
+          (deleteTicket)="onDeleteTicket($event)">
+        </app-ticket-card>
+      </div>
+    }
+
+    <!-- Mensagem quando não há tickets -->
+    @if (filteredTickets.length === 0) {
+      <div class="empty-state">
+        <div class="empty-content">
+          <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+          </svg>
+          <h3>Nenhum ticket encontrado</h3>
+          <p>Não há tickets que correspondam aos filtros selecionados.</p>
+          <button class="btn-secondary" (click)="filterOptions.status = 'all'; filterOptions.priority = 'all'; filterOptions.category = 'all'; filterOptions.search = ''; applyFilters()">
+            Limpar filtros
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+  </div>
+}
