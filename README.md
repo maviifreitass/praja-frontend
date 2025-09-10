@@ -6,25 +6,6 @@
 
 A aplicação frontend segue uma arquitetura modular baseada em componentes standalone do Angular, com separação clara entre camadas de apresentação, serviços e modelos. O sistema se comunica com uma API REST backend através de interceptors HTTP para autenticação e tratamento de erros, oferecendo uma experiência de usuário fluida com skeleton loaders, toasts informativos e validações em tempo real.
 
-## 🏗️ Arquitetura
-
-```
-┌─────────────────┐    HTTP/REST    ┌──────────────────┐
-│   Angular App   │ ◄──────────────► │   Backend API    │
-│    (Frontend)   │                  │   (Separado)     │
-└─────────────────┘                  └──────────────────┘
-         │
-         ▼
-┌─────────────────┐
-│   Estrutura     │
-│                 │
-│ ├── Pages       │ ◄── Componentes de página
-│ ├── Shared      │ ◄── Componentes reutilizáveis  
-│ ├── Core        │ ◄── Serviços e guards
-│ └── Models      │ ◄── Interfaces e tipos
-└─────────────────┘
-```
-
 **Principais funcionalidades:**
 - 🎫 **Gestão de Tickets**: Criação, edição, visualização e exclusão
 - 📂 **Categorias**: Organização de tickets por categorias
@@ -102,21 +83,6 @@ export const environment = {
 | `apiTimeout` | Timeout das requisições (ms) | `10000` |
 | `enableDebugMode` | Logs de debug | `true` |
 
-## 👤 Usuários de Teste
-
-### Dados para Demonstração
-
-O sistema utiliza dados mock quando a API backend não está disponível:
-
-**Administrador:**
-- **Email:** admin@praja.com
-- **Senha:** admin123
-- **Perfil:** Administrador completo
-
-**Usuário Comum:**
-- **Email:** user@praja.com  
-- **Senha:** user123
-- **Perfil:** Usuário padrão
 
 ### Fluxos de Demonstração
 
@@ -136,52 +102,8 @@ O sistema utiliza dados mock quando a API backend não está disponível:
    - Filtre por tipo (Admin/Usuário)
    - Gerencie perfis e permissões
 
-## 🔌 API Endpoints (Backend Separado)
 
-> **Nota:** O backend está em um repositório separado. Abaixo estão os endpoints esperados:
-
-### Autenticação
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `POST` | `/auth/login` | Login do usuário |
-| `POST` | `/auth/register` | Registro de novo usuário |
-| `POST` | `/auth/logout` | Logout do usuário |
-| `GET`  | `/auth/me` | Dados do usuário logado |
-
-### Tickets
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `GET`    | `/tickets` | Lista todos os tickets |
-| `GET`    | `/tickets/{id}` | Detalhes de um ticket |
-| `POST`   | `/tickets` | Cria novo ticket |
-| `PUT`    | `/tickets/{id}` | Atualiza ticket |
-| `DELETE` | `/tickets/{id}` | Remove ticket |
-
-### Categorias
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `GET`    | `/categories` | Lista categorias |
-| `GET`    | `/categories/{id}` | Detalhes da categoria |
-| `POST`   | `/categories` | Cria categoria |
-| `PUT`    | `/categories/{id}` | Atualiza categoria |
-| `DELETE` | `/categories/{id}` | Remove categoria |
-
-### Usuários
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| `GET`    | `/auth/users` | Lista usuários |
-| `GET`    | `/auth/users/{id}` | Detalhes do usuário |
-| `PUT`    | `/auth/users/{id}` | Atualiza usuário |
-| `DELETE` | `/auth/users/{id}` | Remove usuário |
-
-## 🔧 Tecnologias Utilizadas
-
-- **Frontend:** Angular 20, TypeScript, RxJS
-- **Styling:** SCSS, CSS Grid/Flexbox
-- **HTTP:** Angular HTTP Client com Interceptors
-- **Routing:** Angular Router com Guards
-- **Forms:** Reactive Forms com validações
-- **UI/UX:** Componentes skeleton, toasts, animações
+> **Nota:** O backend está em um repositório separado. 
 
 ## 📁 Estrutura do Projeto
 
@@ -205,22 +127,3 @@ src/
 ├── environments/           # Configurações de ambiente
 └── assets/                # Recursos estáticos
 ```
-
-## 📊 Arquitetura / System Design
-
-Para diagramas detalhados da arquitetura, consulte a documentação em:
-
-- **[Context Diagram](docs/system-design/context.png)** - Visão geral do sistema
-- **[Container Diagram](docs/system-design/containers.png)** - Arquitetura de containers
-- **[ERD](docs/system-design/erd.png)** - Modelo de dados
-- **[Sequence Diagrams](docs/system-design/sequence.png)** - Fluxos de interação
-
-> 📁 Todos os diagramas estão disponíveis na pasta `/docs/system-design/`
-
-## 🛡️ Segurança
-
-- Interceptors HTTP para autenticação automática
-- Guards para proteção de rotas
-- Validação de entrada em todos os formulários
-- Sanitização de dados de usuário
-- Tratamento seguro de erros

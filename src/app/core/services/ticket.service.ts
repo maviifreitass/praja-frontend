@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { ApiService, ApiResponse } from './api.service';
 import { Ticket, TicketStatus, TicketPriority } from '../../shared/models';
 
@@ -29,6 +29,12 @@ export interface UpdateTicketRequest {
   status?: string;
   priority?: string;
   response?: string;
+}
+
+export interface AIResponseData {
+  response: string;
+  used_model: string;
+  generated_at: string;
 }
 
 export interface TicketResponse {
@@ -71,6 +77,22 @@ export class TicketService {
 
   deleteTicket(id: number): Observable<void> {
     return this.apiService.delete<void>(`/tickets/${id}`);
+  }
+
+  generateAIResponse(ticketId: string): Observable<ApiResponse<AIResponseData>> {
+    return this.apiService.post<any>(`/tickets/${ticketId}/ai-response`, {}).pipe(
+      map((response: any) => {
+        if (response && typeof response === 'object' && 'success' in response && 'data' in response) {
+          return response as ApiResponse<AIResponseData>;
+        }
+
+        return {
+          success: true,
+          data: response as AIResponseData,
+          message: 'Resposta gerada com sucesso'
+        } as ApiResponse<AIResponseData>;
+      })
+    );
   }
 
   private mapToTicket(response: TicketResponse): Ticket {

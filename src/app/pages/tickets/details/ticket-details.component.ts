@@ -31,6 +31,7 @@ export class TicketDetailsComponent implements OnInit {
   errorMessage = '';
   responseForm: FormGroup;
   isSubmittingResponse = false;
+  isGeneratingAI = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -126,7 +127,6 @@ export class TicketDetailsComponent implements OnInit {
         error: (error) => {
           console.error('TicketDetailsComponent: Erro ao atualizar status:', error);
           // Reverter mudança local em caso de erro
-          // (o status já foi alterado na UI, então precisamos reverter)
         }
       });
     }
@@ -180,10 +180,6 @@ export class TicketDetailsComponent implements OnInit {
   formatDescription(description: string): string {
     return description.replace(/\n/g, '<br>');
   }
-
-
-
-
 
   /**
    * Excluir ticket
@@ -283,5 +279,30 @@ export class TicketDetailsComponent implements OnInit {
       return 'Resposta deve ter pelo menos 10 caracteres';
     }
     return '';
+  }
+
+  generateAIResponse(): void {
+    if (!this.ticket || !this.ticketId || this.isGeneratingAI) {
+      return;
+    }
+
+    this.isGeneratingAI = true;
+
+    this.ticketService.generateAIResponse(this.ticketId).subscribe({
+      next: (response) => {
+        this.isGeneratingAI = false;
+        if (response.success && response.data) {
+          this.responseForm.patchValue({
+            response: response.data.response
+          });
+          this.toastService.success('Resposta gerada com IA!');
+        }
+      },
+      error: (error) => {
+        this.isGeneratingAI = false;
+        console.error('Erro ao gerar resposta com IA:', error);
+        this.toastService.error('Erro ao gerar resposta com IA. Tente novamente.');
+      }
+    });
   }
 }
