@@ -103,7 +103,7 @@ export const environment = {
    - Gerencie perfis e permissões
 
 
-> **Nota:** O backend está em um repositório separado. 
+> **Nota:** O backend está em um [repositório separado](https://github.com/maviifreitass/praja-backend). 
 
 ## 📁 Estrutura do Projeto
 
